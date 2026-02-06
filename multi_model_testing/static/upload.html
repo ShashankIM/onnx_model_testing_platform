@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Model – Multi-Model Lab</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #181b22;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59,130,246,0.15);
+      --border: #272b35;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 50%, #000 100%);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0 0 8px 0;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.4);
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    select {
+      width: 100%;
+      font-size: 13px;
+      padding: 6px 8px;
+      border-radius: var(--radius-md);
+      border: 1px solid #374151;
+      background: #020617;
+      color: var(--text-main);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      font-size: 13px;
+      padding: 6px 8px;
+      border-radius: var(--radius-md);
+      border: 1px solid #374151;
+      background: #020617;
+      color: var(--text-main);
+    }
+
+    /* dropzones for model + label */
+    .dropzone {
+      margin-top: 4px;
+      border-radius: var(--radius-md);
+      border: 1px dashed #4b5563;
+      background: #020617;
+      padding: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .dropzone span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .dropzone.drag-over {
+      border-color: var(--accent);
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--text-main);
+    }
+
+    .dropzone-file {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-row {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text-main);
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      border-color: var(--accent);
+      background: linear-gradient(135deg,#2563eb,#7c3aed);
+      box-shadow: 0 12px 30px rgba(37,99,235,0.4);
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.5);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #111827;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      display: none;
+    }
+
+    .status.ok {
+      display: block;
+      background: rgba(22,163,74,0.12);
+      border: 1px solid #16a34a;
+      color: #bbf7d0;
+    }
+
+    .status.err {
+      display: block;
+      background: rgba(220,38,38,0.12);
+      border: 1px solid #f87171;
+      color: #fecaca;
+    }
+
+    a.link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    a.link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <h1>Upload model</h1>
+  <div class="subtitle">
+    Add new detection or classification models to the lab.<br>
+    The testing UI is at <a class="link" href="/">/</a>.
+  </div>
+
+  <div class="panel">
+    <form id="upload-form">
+      <label>Model type</label>
+      <select id="model-type" name="model_type" required>
+        <option value="detection">Detection</option>
+        <option value="classification">Classification</option>
+      </select>
+
+      <label style="margin-top:12px;">Model file (.onnx / .pt / etc.)</label>
+      <!-- hidden real input -->
+      <input type="file" id="model-file" name="model_file" style="display:none" required>
+      <!-- drag & drop UI -->
+      <div id="model-dropzone" class="dropzone">
+        <div>Drop model file here or <span>click to browse</span></div>
+        <div id="model-file-name" class="dropzone-file"></div>
+      </div>
+
+      <label>Label file (.txt)</label>
+      <!-- hidden real input -->
+      <input type="file" id="label-file" name="label_file" accept=".txt" style="display:none" required>
+      <!-- drag & drop UI -->
+      <div id="label-dropzone" class="dropzone">
+        <div>Drop label file here or <span>click to browse</span></div>
+        <div id="label-file-name" class="dropzone-file"></div>
+      </div>
+
+      <div class="note">
+        <div><span class="pill">Rule 1</span> Model file name and label file name must match
+          (example: <code>person_face.onnx</code> + <code>person_face.txt</code>).</div>
+        <div><span class="pill">Rule 2</span> If a model with that name already exists in the selected folder,
+          upload will be rejected.</div>
+        <div><span class="pill">Rule 3</span> Detection models go to <code>models/detection/</code>,
+          classification models go to <code>models/classification/</code>.</div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary" id="submit-btn">Upload model</button>
+        <a href="/" class="btn" style="text-decoration:none;">Back to testing UI</a>
+      </div>
+
+      <div id="status-box" class="status"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById("upload-form");
+const statusBox = document.getElementById("status-box");
+const submitBtn = document.getElementById("submit-btn");
+
+const modelInput = document.getElementById("model-file");
+const labelInput = document.getElementById("label-file");
+const modelDrop = document.getElementById("model-dropzone");
+const labelDrop = document.getElementById("label-dropzone");
+const modelName = document.getElementById("model-file-name");
+const labelName = document.getElementById("label-file-name");
+
+function showStatus(msg, ok) {
+  statusBox.textContent = msg;
+  statusBox.className = "status " + (ok ? "ok" : "err");
+}
+
+// helper: set single file into <input type="file"> using DataTransfer
+function setSingleFileOnInput(input, file) {
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
+}
+
+// ---- drag/drop for model ----
+modelDrop.addEventListener("click", () => modelInput.click());
+
+modelDrop.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  modelDrop.classList.add("drag-over");
+});
+
+modelDrop.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  modelDrop.classList.remove("drag-over");
+});
+
+modelDrop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  modelDrop.classList.remove("drag-over");
+  const files = e.dataTransfer.files;
+  if (!files || !files.length) return;
+  const file = files[0];
+  setSingleFileOnInput(modelInput, file);
+  modelName.textContent = "Selected: " + file.name;
+});
+
+modelInput.addEventListener("change", () => {
+  const file = modelInput.files[0];
+  modelName.textContent = file ? ("Selected: " + file.name) : "";
+});
+
+// ---- drag/drop for label (.txt) ----
+labelDrop.addEventListener("click", () => labelInput.click());
+
+labelDrop.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  labelDrop.classList.add("drag-over");
+});
+
+labelDrop.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  labelDrop.classList.remove("drag-over");
+});
+
+labelDrop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  labelDrop.classList.remove("drag-over");
+  const files = e.dataTransfer.files;
+  if (!files || !files.length) return;
+  const file = files[0];
+
+  if (!file.name.toLowerCase().endsWith(".txt")) {
+    showStatus("Label file must be a .txt file.", false);
+    return;
+  }
+
+  setSingleFileOnInput(labelInput, file);
+  labelName.textContent = "Selected: " + file.name;
+});
+
+labelInput.addEventListener("change", () => {
+  const file = labelInput.files[0];
+  labelName.textContent = file ? ("Selected: " + file.name) : "";
+});
+
+// ---- submit handler ----
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const typeSelect = document.getElementById("model-type");
+
+  const modelFile = modelInput.files[0];
+  const labelFile = labelInput.files[0];
+
+  if (!modelFile || !labelFile) {
+    showStatus("Select both model and label files.", false);
+    return;
+  }
+
+  // client-side filename check
+  const modelStem = modelFile.name.replace(/\.[^.]+$/, "");
+  const labelStem = labelFile.name.replace(/\.[^.]+$/, "");
+
+  if (modelStem !== labelStem) {
+    showStatus("Model file name and label file name must match (without extension).", false);
+    return;
+  }
+
+  if (!labelFile.name.toLowerCase().endsWith(".txt")) {
+    showStatus("Label file must be a .txt file.", false);
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append("model_type", typeSelect.value);
+  fd.append("model_file", modelFile);
+  fd.append("label_file", labelFile);
+
+  submitBtn.disabled = true;
+  showStatus("Uploading...", true);
+
+  try {
+    const res = await fetch("/upload_model", {
+      method: "POST",
+      body: fd,
+    });
+
+    const text = await res.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch {
+      // not JSON, show raw text
+    }
+
+    if (!res.ok) {
+      const detail =
+        (data && data.detail) ? data.detail :
+        text || "Upload failed.";
+      showStatus("Error: " + detail, false);
+    } else {
+      const msg = data && data.message ? data.message : "Upload successful.";
+      showStatus(msg, true);
+      // clear files so user can upload another
+      modelInput.value = "";
+      labelInput.value = "";
+      modelName.textContent = "";
+      labelName.textContent = "";
+    }
+  } catch (err) {
+    console.error(err);
+    showStatus("Network error while uploading.", false);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

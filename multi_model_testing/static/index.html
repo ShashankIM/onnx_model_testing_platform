@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Model Detection + Classification</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <!-- html2canvas for exporting result cards -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <div class="app-title">
+      <h1>Multi-Model Detection + Classification</h1>
+      <span>interactive model testing lab</span>
+    </div>
+    <a href="/upload" class="btn btn-secondary header-link">Upload model</a>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: controls -->
+    <section class="panel">
+      <div class="panel-header">
+        <h3>1. Choose models & images</h3>
+        <span>Detection only, classification only, or both</span>
+      </div>
+
+      <label>Detection models</label>
+      <div class="model-select-row">
+        <button class="btn btn-secondary btn-small" id="det-select-btn">Select detection models</button>
+        <span id="det-selected-summary" class="muted small">None selected</span>
+      </div>
+
+      <label>Classification models</label>
+      <div class="model-select-row">
+        <button class="btn btn-secondary btn-small" id="cls-select-btn">Select classification models</button>
+        <span id="cls-selected-summary" class="muted small">None selected</span>
+      </div>
+
+      <label>Detection threshold</label>
+      <div class="slider-row">
+        <input type="range" id="det-thresh" min="10" max="90" value="30">
+        <span id="det-thresh-label" class="muted">0.30</span>
+      </div>
+
+      <label>Classification threshold</label>
+      <div class="slider-row">
+        <input type="range" id="cls-thresh" min="10" max="90" value="50">
+        <span id="cls-thresh-label" class="muted">0.50</span>
+      </div>
+
+      <label>Detection labels (selected models)</label>
+      <div id="det-label-cards" class="labels-grid"></div>
+
+      <label>Classification labels (selected models)</label>
+      <div id="cls-label-cards" class="labels-grid"></div>
+
+      <label>Images</label>
+      <div id="dropzone" class="dropzone">
+        <div id="drop-text-main">Drop one or more images here or <span>click to browse</span></div>
+        <div id="drop-text-file" class="muted" style="margin-top:4px; display:none;"></div>
+      </div>
+      <input type="file" id="image-input" accept="image/*" multiple style="display:none">
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="run-btn">Run</button>
+        <button class="btn btn-secondary" id="clear-btn">Clear</button>
+      </div>
+
+      <div class="help-panel" id="help-tip">
+        Mode rules:
+        <br>- Select only detection models → detection-only
+        <br>- Select only classification models → classification on full image
+        <br>- Select both → detection + per-crop classification
+      </div>
+
+      <div class="help-panel" id="help-section"></div>
+    </section>
+
+    <!-- RIGHT: results -->
+    <section class="panel">
+      <div class="panel-header">
+        <h3>2. Results</h3>
+        <span id="status-text" class="muted">Idle</span>
+      </div>
+
+      <div id="results-container"></div>
+    </section>
+  </div>
+</div>
+
+<!-- Model selection modal -->
+<div id="model-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-title">Select models</span>
+      <button id="modal-close" class="btn btn-secondary btn-small">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-model-list" id="modal-model-list">
+        <!-- model list -->
+      </div>
+      <div class="modal-labels" id="modal-labels">
+        <div class="modal-labels-title" id="modal-labels-title">Labels</div>
+        <div class="modal-labels-actions">
+          <button id="modal-select-all-labels" class="btn btn-secondary btn-small">Select all</button>
+          <button id="modal-clear-labels" class="btn btn-secondary btn-small">Clear</button>
+        </div>
+        <div class="modal-labels-list" id="modal-labels-list">
+          <!-- labels -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="muted small" id="modal-hint">
+        Tip: select models in the left list, then adjust labels on the right.
+      </span>
+      <button id="modal-done" class="btn btn-primary btn-small">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
